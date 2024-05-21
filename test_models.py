@@ -16,13 +16,14 @@ class UserModelTestCase(TestCase):
 
     def setUp(self):
         """Cleans up any current users"""
-        User.query.delete()
+        with app.app_context():
+            User.query.delete()
     
     def tearDown(self):
         """Clean up any issues"""
-
-        db.session.rollback()
+        with app.app_context():
+            db.session.rollback()
 
     def test_full_name(self):
         user=User(user_name="TestMon2", first_name="Test",last_name="Mon2",user_email="Test.Mon2@something.com")
-        self.assertEqual(user.get_full_name(), "Test Mon2")
+        self.assertEqual(user.get_full_name, "Test Mon2")

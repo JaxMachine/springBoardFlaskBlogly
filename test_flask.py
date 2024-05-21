@@ -22,22 +22,20 @@ class UserViewsTestCase(TestCase):
 
     def setUp(self):
         """Add sample user"""
-        User.query.delete()
-
-        user=User(user_name="TestMon2", first_name="Test",last_name="Mon2",user_email="Test.Mon2@something.com")
-
-        db.session.add(user)
-        db.session.commit()
-
-        self.user_id=user.id
+        with app.app_context():
+            User.query.delete()
+            user=User(user_name="TestMon2", first_name="Test",last_name="Mon2",user_email="Test.Mon2@something.com")
+            db.session.add(user)
+            db.session.commit()
+            self.user_id=user.id
 
     def tearDown(self):
-
-        db.session.rollback()
+        with app.app_context():
+            db.session.rollback()
 
     def test_list_users(self):
-        with app.test_client as client:
-            resp= client.get("/")
+        with app.test_client() as client:
+            resp= client.get("/", follow_redirects=True)
             html=resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
@@ -49,12 +47,12 @@ class UserViewsTestCase(TestCase):
             html=resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertIn("<p>TestMon2</p>", html)
+            self.assertIn("TestMon2</p>", html)
 
     def test_add_user(self):
         with app.test_client() as client:
-            test3 = user=User(user_name="TestMon3", first_name="Test",last_name="Mon3",user_email="Test.Mon3@something.com")
-            resp = client.post("/user/new", data=test3, follow_redirects=True)
+            user = {"user_name" :"TestMon3", "first_name": "Test","last_name" : "Mon3", "user_email" : "Test.Mon3@something.com"}
+            resp = client.post("/users/new", data=user, follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
